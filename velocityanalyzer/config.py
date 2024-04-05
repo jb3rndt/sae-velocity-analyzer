@@ -8,7 +8,7 @@ class RedisConfig(BaseModel):
     host: str = 'localhost'
     port: conint(ge=1, le=65536) = 6379
     stream_id: str = 'stream1'
-    input_stream_prefix: str = 'objecttracker'
+    input_stream_prefix: str = 'geomapper'
     output_stream_prefix: str = 'velocityanalyzer'
 
 class AnalyzerConfig(BaseSettings):

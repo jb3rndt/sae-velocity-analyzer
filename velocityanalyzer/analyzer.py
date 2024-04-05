@@ -1,7 +1,9 @@
+from datetime import datetime
 import logging
 from typing import Any, Dict, NamedTuple
 
 from prometheus_client import Counter, Histogram, Summary
+from velocityanalyzer.tracked_object import TrackedObject
 from visionapi.messages_pb2 import BoundingBox, SaeMessage
 
 from .config import AnalyzerConfig
@@ -19,18 +21,26 @@ PROTO_DESERIALIZATION_DURATION = Summary('velocity_analyzer_proto_deserializatio
 class Analyzer:
     def __init__(self, config: AnalyzerConfig) -> None:
         self.config = config
+        self.objects: Dict[str, TrackedObject] = {}
         logger.setLevel(self.config.log_level.value)
 
     def __call__(self, input_proto) -> Any:
         return self.get(input_proto)
 
     @GET_DURATION.time()
-    def get(self, input_proto):
+    def get(self, input_proto, **kwargs):
         sae_msg = self._unpack_proto(input_proto)
 
-        # Your implementation goes (mostly) here
-        logger.warning('Received SAE message from pipeline')
-        logger.info(sae_msg)
+        frame_timestamp = sae_msg.frame.timestamp_utc_ms
+
+        for detection in sae_msg.detections:
+            object_id = detection.object_id.hex()
+            if object_id in self.objects:
+                self.objects[object_id].update(detection.geo_coordinate, frame_timestamp)
+            else:
+                self.objects[object_id] = TrackedObject(object_id, detection.geo_coordinate, frame_timestamp)
+            detection.confidence = self.objects[object_id].velocity or 0
+
 
         return self._pack_proto(sae_msg)
 
