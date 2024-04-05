@@ -7,7 +7,7 @@ from visionlib.pipeline.consumer import RedisConsumer
 from visionlib.pipeline.publisher import RedisPublisher
 
 from .config import MyStageConfig
-from .mystage import MyStage
+from .analyzer import MyStage
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +41,10 @@ def run_stage():
 
     my_stage = MyStage(CONFIG)
 
-    consume = RedisConsumer(CONFIG.redis.host, CONFIG.redis.port, 
+    consume = RedisConsumer(CONFIG.redis.host, CONFIG.redis.port,
                             stream_keys=[f'{CONFIG.redis.input_stream_prefix}:{CONFIG.redis.stream_id}'])
     publish = RedisPublisher(CONFIG.redis.host, CONFIG.redis.port)
-    
+
     with consume, publish:
         for stream_key, proto_data in consume():
             if stop_event.is_set():
@@ -61,7 +61,6 @@ def run_stage():
 
             if output_proto_data is None:
                 continue
-            
+
             with REDIS_PUBLISH_DURATION.time():
                 publish(f'{CONFIG.redis.output_stream_prefix}:{stream_id}', output_proto_data)
-            
