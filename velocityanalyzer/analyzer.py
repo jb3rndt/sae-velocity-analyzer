@@ -4,7 +4,7 @@ from typing import Any, Dict, NamedTuple
 from prometheus_client import Counter, Histogram, Summary
 from visionapi.messages_pb2 import BoundingBox, SaeMessage
 
-from .config import MyStageConfig
+from .config import AnalyzerConfig
 
 logging.basicConfig(format='%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s')
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ PROTO_DESERIALIZATION_DURATION = Summary('velocity_analyzer_proto_deserializatio
 
 
 class Analyzer:
-    def __init__(self, config: MyStageConfig) -> None:
+    def __init__(self, config: AnalyzerConfig) -> None:
         self.config = config
         logger.setLevel(self.config.log_level.value)
 
@@ -30,6 +30,7 @@ class Analyzer:
 
         # Your implementation goes (mostly) here
         logger.warning('Received SAE message from pipeline')
+        logger.info(sae_msg)
 
         return self._pack_proto(sae_msg)
 
