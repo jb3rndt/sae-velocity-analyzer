@@ -20,5 +20,19 @@ class TrackedObject:
             (self.current_coordinate.latitude, self.current_coordinate.longitude),
         ).m
         time_diff_in_s = (frame_timestamp - self.last_update_at) / 1000
-        self.velocity = (distance_in_m / time_diff_in_s * 3.6 - 1)
+        self.velocity = [
+            0 if v < 1 else v for v in [(distance_in_m / time_diff_in_s * 3.6)]
+        ][0]
         self.last_update_at = frame_timestamp
+
+    def to_json(self):
+        if self.current_coordinate.latitude is None or self.current_coordinate.longitude is None:
+            raise ValueError("Latitude and longitude must be set")
+        return {
+            "id": self.id,
+            "velocity": self.velocity,
+            "coordinates": {
+                "lat": self.current_coordinate.latitude,
+                "lng": self.current_coordinate.longitude,
+            },
+        }
