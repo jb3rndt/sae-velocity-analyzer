@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict
 from prometheus_client import Counter, Histogram, Summary
 from visionapi.messages_pb2 import SaeMessage
 
-from velocityanalyzer.tracked_object import TrackedObject
+from velocityanalyzer.tracked_object import PositionUpdate, TrackedObject
 
 from .config import AnalyzerConfig
 
@@ -52,7 +52,7 @@ class Analyzer:
             object_id = detection.object_id.hex()
             if object_id in self.objects:
                 self.objects[object_id].update(
-                    detection.geo_coordinate, frame_timestamp
+                    PositionUpdate(detection.geo_coordinate, frame_timestamp)
                 )
             else:
                 self.objects[object_id] = TrackedObject(
@@ -63,10 +63,9 @@ class Analyzer:
         self.objects = {
             k: v
             for k, v in self.objects.items()
-            if frame_timestamp - v.last_update_at < 2000
+            if frame_timestamp - v.last_positions[-1].timestamp < 2000
         }
 
-        #        print(self.update_queue)
         self.push_update({"data": [obj.to_json() for _, obj in self.objects.items()]})
 
         return self._pack_proto(sae_msg)

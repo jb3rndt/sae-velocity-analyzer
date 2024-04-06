@@ -14,7 +14,7 @@ class RedisConfig(BaseModel):
 class AnalyzerConfig(BaseSettings):
     log_level: LogLevel = LogLevel.WARNING
     redis: RedisConfig = RedisConfig()
-    prometheus_port: conint(gt=1024, le=65536) = 8000
+    prometheus_port: conint(gt=1024, le=65536) = 8008
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')
 
