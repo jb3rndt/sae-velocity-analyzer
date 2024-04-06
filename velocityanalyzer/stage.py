@@ -100,7 +100,7 @@ async def update_clients(websocket):
             update = updates.get()
             print(f"Sending update: {update}")
             await websocket.send(json.dumps(update))
-        time.sleep(0.2)
+        time.sleep(0.05)
 
 
 async def main():
